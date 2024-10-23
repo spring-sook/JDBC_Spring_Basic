@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-@Repository
+@Repository  // stream bin에다가 주입하는 방식??
 public class EmpDAO {
     private final JdbcTemplate jdbcTemplate;
 
@@ -22,10 +22,38 @@ public class EmpDAO {
         return jdbcTemplate.query(sql, new EmpRowMapper());
     }
 
-    public void empInsert(EmpVO vo) {
+    public boolean empInsert(EmpVO vo) {
+        int result = 0;
         String sql = "INSERT INTO EMP (EMPNO, ENAME, JOB, MGR, HIREDATE, SAL, COMM, DEPTNO) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        jdbcTemplate.update(sql, vo.getEmpNO(), vo.getName(), vo.getJob(),
-                vo.getMgr(), vo.getDate(), vo.getSal(), vo.getComm(), vo.getDeptNO());
+        try {
+            result = jdbcTemplate.update(sql, vo.getEmpNO(), vo.getName(), vo.getJob(),
+                    vo.getMgr(), vo.getDate(), vo.getSal(), vo.getComm(), vo.getDeptNO());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result > 0;
+    }
+
+    public boolean empDelete(String name) {
+        int result = 0;
+        String query = "DELETE FROM EMP WHERE ENAME = ?";
+        try {
+            result = jdbcTemplate.update(query, name);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result > 0;
+    }
+
+    public boolean empUpdate(EmpVO emp) {
+        int result = 0;
+        try {
+            String query = "UPDATE EMP SET JOB = ?, SAL = ?, COMM = ? WHERE ENAME = ?";
+            jdbcTemplate.update(query, emp.getJob(), emp.getSal(), emp.getComm(), emp.getName());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
+        return result > 0;
     }
 
     private static class EmpRowMapper implements RowMapper<EmpVO> {
